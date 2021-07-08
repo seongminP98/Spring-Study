@@ -5,13 +5,13 @@ import hello.core.member.Member;
 import hello.core.member.MemberRepository;
 import hello.core.member.MemoryMemberRepository;
 
-public class OrderServiceImple implements OrderService{
+public class OrderServiceImpl implements OrderService{
 
 //    private final MemberRepository memberRepository = new MemoryMemberRepository(); //DIP위반.
     private MemberRepository memberRepository; //인터페이스만 의존한다. DIP지킴.
     private DiscountPolicy discountPolicy;
 
-    public OrderServiceImple(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
         this.memberRepository = memberRepository;
         this.discountPolicy = discountPolicy;
     }
