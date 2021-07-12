@@ -16,9 +16,10 @@ import org.springframework.context.annotation.FilterType;
         //기존 코드를 남기기 위해 사용.
 )
 public class AutoAppConfig {
-
+/* 중복 확인 코드
     @Bean(name = "memoryMemberRepository")
     MemberRepository memberRepository() {
         return new MemoryMemberRepository();
     }
+*/
 }
