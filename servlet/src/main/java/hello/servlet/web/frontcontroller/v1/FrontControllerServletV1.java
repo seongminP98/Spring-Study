@@ -36,7 +36,7 @@ public class FrontControllerServletV1 extends HttpServlet {
             return;
         }
 
-        controller.process(request,response);   //다형성 사용. 
+        controller.process(request,response);   //다형성 사용.
 
     }
 }
