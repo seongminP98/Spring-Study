@@ -50,17 +50,6 @@ public class BasicController {
         return "basic/variable";
     }
 
-    @Data
-    static class User {
-        private String username;
-        private int age;
-
-        public User(String username, int age) {
-            this.username = username;
-            this.age = age;
-        }
-    }
-
     @GetMapping("/basic-objects")
     public String basicObjects(HttpSession session) {
         session.setAttribute("sessionData","Hello Session");
@@ -103,6 +92,32 @@ public class BasicController {
     @GetMapping("/attribute")
     public String attribute() {
         return "basic/attribute";
+    }
+
+    @GetMapping("/each")
+    public String each(Model model) {
+        addUsers(model);
+        return "basic/each";
+    }
+
+    private void addUsers(Model model) {
+        List<User> list = new ArrayList<>();
+        list.add(new User("UserA",10));
+        list.add(new User("UserB",20));
+        list.add(new User("UserC",30));
+
+        model.addAttribute("users",list);
+    }
+
+    @Data
+    static class User {
+        private String username;
+        private int age;
+
+        public User(String username, int age) {
+            this.username = username;
+            this.age = age;
+        }
     }
 
 }
