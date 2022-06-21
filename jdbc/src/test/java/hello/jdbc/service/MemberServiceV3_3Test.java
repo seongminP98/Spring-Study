@@ -1,39 +1,67 @@
 package hello.jdbc.service;
 
-import hello.jdbc.connection.ConnectionConst;
 import hello.jdbc.domain.Member;
-import hello.jdbc.repository.MemberRepositoryV1;
-import hello.jdbc.repository.MemberRepositoryV2;
+import hello.jdbc.repository.MemberRepositoryV3;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 
-import static hello.jdbc.connection.ConnectionConst.*; // URL, USERNAME, PASSWORD
+import static hello.jdbc.connection.ConnectionConst.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * 트랜잭션 - 커넥션 파라미터 전달 방식 동기화
+ * 트랜잭션 - @Transactional AOP
  */
-class MemberServiceV2Test {
+@Slf4j
+@SpringBootTest // 스프링 AOP를 적용하려면 스프링 컨테이너가 있어야한다.
+class MemberServiceV3_3Test {
 
     public static final String MEMBER_A = "memberA";
     public static final String MEMBER_B = "memberB";
     public static final String MEMBER_EX = "ex";
 
-    private MemberRepositoryV2 memberRepository;
-    private MemberServiceV2 memberService;
+    @Autowired
+    private MemberRepositoryV3 memberRepository;
+    @Autowired
+    private MemberServiceV3_3 memberService; // 실제 MemberServiceV3_3가 아니라 AOP 프록시가 의존관계 주입이 됨.
 
-    @BeforeEach
-    void before() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(URL, USERNAME, PASSWORD);
-        memberRepository = new MemberRepositoryV2(dataSource);
-        memberService = new MemberServiceV2(dataSource, memberRepository);
+    @TestConfiguration // 테스트 클래스 안에서 스프링 부트가 자동으로 만들어주는 빈들에 추가로 필요한 스프링 빈들을 등록하고 테스트를 수행할 수 있따.
+    static class TestConfig {
+        @Bean
+        DataSource dataSource() {
+            return new DriverManagerDataSource(URL, USERNAME, PASSWORD);
+        }
+
+        @Bean
+        PlatformTransactionManager transactionManager() {
+            return new DataSourceTransactionManager(dataSource());
+        }
+
+        @Bean
+        MemberRepositoryV3 memberRepositoryV3() {
+            return new MemberRepositoryV3(dataSource());
+        }
+
+        @Bean
+        MemberServiceV3_3 memberServiceV3_3() {
+            return new MemberServiceV3_3(memberRepositoryV3());
+        }
     }
 
     @AfterEach
@@ -41,6 +69,14 @@ class MemberServiceV2Test {
         memberRepository.delete(MEMBER_A);
         memberRepository.delete(MEMBER_B);
         memberRepository.delete(MEMBER_EX);
+    }
+
+    @Test
+    void aopCheck() {
+        log.info("memberService class={}", memberService.getClass());
+        log.info("memberRepository class={}", memberRepository.getClass());
+        assertThat(AopUtils.isAopProxy(memberService)).isTrue();
+        assertThat(AopUtils.isAopProxy(memberRepository)).isFalse();
     }
 
     @Test
