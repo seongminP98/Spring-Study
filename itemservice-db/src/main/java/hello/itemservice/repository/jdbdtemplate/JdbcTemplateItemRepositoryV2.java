@@ -68,7 +68,7 @@ public class JdbcTemplateItemRepositoryV2 implements ItemRepository {
                 .addValue("itemName", updateParam.getItemName())
                 .addValue("price", updateParam.getPrice())
                 .addValue("quantity", updateParam.getQuantity())
-                .addValue("id", itemId);
+                .addValue("id", itemId); // 이 부분이 별도로 필요하다. BeanPropertySqlParameterSource 를 쓰면 id는 세팅을 못해서 Map사용
 
         template.update(sql, param);
     }
@@ -117,6 +117,7 @@ public class JdbcTemplateItemRepositoryV2 implements ItemRepository {
     }
 
     private RowMapper<Item> itemRowMapper() {
-        return BeanPropertyRowMapper.newInstance(Item.class); // camel 변환 지원
+        // 데이터베이스 조회 결과 이름을 기반으로 자바빈 프로퍼티 규약에 맞춘 메서드를 호출하는 것이다.
+        return BeanPropertyRowMapper.newInstance(Item.class); // camel 변환 지원 (스네이크케이스를 카멜케이스로 변환 시켜준다. item_name > itemName)
     }
 }
